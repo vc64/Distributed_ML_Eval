@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-class LogisticRegression(nn.module):
+class LogisticRegression(nn.Module):
     def __init__(self, input_dim, num_classes):
         super().__init__()
         self.linear = nn.Linear(input_dim, num_classes)
@@ -8,7 +8,7 @@ class LogisticRegression(nn.module):
     def forward(self, x):
         return nn.Sigmoid(self.linear(x))
 
-class MLP(nn.module):
+class MLP(nn.Module):
     def __init__(self, input_dim, num_classes):
         super().__init__()
         self.net = nn.Sequential(
