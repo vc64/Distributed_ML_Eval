@@ -1,0 +1,12 @@
+services:
+  main:
+    build: .
+    command: ["python", "main.py"]
+    depends_on:
+      - worker
+
+  worker:
+    build: .
+    command: ["python", "worker.py"]
+    deploy:
+      replicas: 4
