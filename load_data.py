@@ -1,5 +1,8 @@
 from sklearn.datasets import fetch_covtype
 import pandas as pd
+from torch.utils.data import Dataset, DataLoader
+import torch
+from sklearn.model_selection import train_test_split
 
 # load dataset using sklearn, first time will take a while due to download time
 covtype = fetch_covtype()
@@ -45,4 +48,30 @@ print("Missing labels:", y[pd.isnull(y)].shape)
 
 scaled_vals = (X - X.mean(axis=0)) / X.std(axis=0)
 
-print(scaled_vals.loc[:, (scaled_vals >= 3).any(axis=0)].columns)
+X_train, X_test, y_train, y_test = train_test_split(scaled_vals, y, test_size=0.2)
+
+train_data = X_train.assign(label=y_train)
+test_data = X_test.assign(label=y_test)
+
+train_data.to_parquet("data/train_data.parquet")
+test_data.to_parquet("data/test_data.parquet")
+
+class CovertypeDataset(Dataset):
+    def __init__(self, features, labels):
+        self.features = torch.tensor(features.values, dtype=torch.float32)
+        self.targets = torch.tensor(labels.values, dtype=torch.float32).unsqueeze(1)
+        
+    def __len__(self):
+        return len(self.targets)
+    
+    def __getitem__(self, idx):
+        return self.features[idx], self.targets[idx]
+
+def load_data():
+    train_data = pd.read_parquet("data/train_data.parquet")
+    test_data = pd.read_parquet("data/test_data.parquet")
+    train_dataset = CovertypeDataset(train_data.drop("label", axis=1), train_data["label"])
+    test_dataset = CovertypeDataset(test_data.drop("label", axis=1), test_data["label"])
+    train_dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
+    test_dataloader = DataLoader(test_dataset, batch_size=2, shuffle=True)
+    return train_dataloader, test_dataloader
