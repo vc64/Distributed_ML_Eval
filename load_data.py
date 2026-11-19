@@ -1,3 +1,5 @@
+import os
+
 from sklearn.datasets import fetch_covtype
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
@@ -53,6 +55,7 @@ X_train, X_test, y_train, y_test = train_test_split(scaled_vals, y, test_size=0.
 train_data = X_train.assign(label=y_train)
 test_data = X_test.assign(label=y_test)
 
+os.makedirs("data", exist_ok=True)
 train_data.to_parquet("data/train_data.parquet")
 test_data.to_parquet("data/test_data.parquet")
 
